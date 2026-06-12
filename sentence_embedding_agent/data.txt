@@ -1,0 +1,11 @@
+Python is a popular programming language.
+
+Machine Learning is a branch of Artificial Intelligence.
+
+Node.js is used to build backend applications.
+
+LangChain helps developers build AI applications.
+
+RAG combines retrieval and generation for question answering.
+
+FAISS is used for vector similarity search.
