@@ -1,0 +1,7 @@
+Python is a programming language.
+
+Machine Learning is a subset of Artificial Intelligence.
+
+Node.js is used for backend development.
+
+RAG combines retrieval and generation.
