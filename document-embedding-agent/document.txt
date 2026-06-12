@@ -1,0 +1,11 @@
+Python is a high-level programming language.
+
+Machine Learning is a subset of Artificial Intelligence.
+
+Node.js is widely used for backend development.
+
+LangChain is a framework for building LLM applications.
+
+FAISS is a vector database used for similarity search.
+
+RAG combines retrieval and generation to answer questions.
