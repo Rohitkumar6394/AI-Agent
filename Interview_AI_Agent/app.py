@@ -1,6 +1,12 @@
 import streamlit as st
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer, util
+from faster_whisper import WhisperModel
+import sounddevice as sd
+from scipy.io.wavfile import write
+import pyttsx3
+import tempfile
+import os
 
 # -----------------------------
 # Load Models
@@ -14,10 +20,57 @@ def load_models():
 
     embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
-    return generator, embedder
+    whisper = WhisperModel(
+        "base",
+        device="cpu",
+        compute_type="int8"
+    )
+
+    return generator, embedder, whisper
 
 
-generator, embedder = load_models()
+generator, embedder, whisper = load_models()
+
+# -----------------------------
+# Text to Speech
+# -----------------------------
+def speak_text(text):
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 160)
+    engine.say(text)
+    engine.runAndWait()
+
+# -----------------------------
+# Record Voice
+# -----------------------------
+def record_voice(duration=8):
+    fs = 16000
+    st.info("🎤 Recording started... Speak now")
+
+    audio = sd.rec(
+        int(duration * fs),
+        samplerate=fs,
+        channels=1,
+        dtype="int16"
+    )
+    sd.wait()
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".wav")
+    write(temp_file.name, fs, audio)
+
+    return temp_file.name
+
+# -----------------------------
+# Speech to Text
+# -----------------------------
+def voice_to_text(audio_path):
+    segments, info = whisper.transcribe(audio_path)
+
+    text = ""
+    for segment in segments:
+        text += segment.text + " "
+
+    return text.strip()
 
 # -----------------------------
 # Interview Questions
@@ -29,11 +82,11 @@ questions = [
     },
     {
         "question": "What is Python?",
-        "ideal": "Python is a high-level, interpreted programming language used for web development, AI, data science, automation, and scripting."
+        "ideal": "Python is a high-level interpreted programming language used for web development, AI, data science, automation, and scripting."
     },
     {
         "question": "What is Machine Learning?",
-        "ideal": "Machine Learning is a branch of AI where systems learn patterns from data and make predictions or decisions without explicit programming."
+        "ideal": "Machine Learning is a branch of AI where systems learn from data and make predictions or decisions."
     },
     {
         "question": "Explain your final year project.",
@@ -41,7 +94,7 @@ questions = [
     },
     {
         "question": "Why should we hire you?",
-        "ideal": "Candidate should explain skills, learning ability, projects, teamwork, and how they can contribute to the company."
+        "ideal": "Candidate should explain skills, learning ability, projects, teamwork, and contribution to company."
     }
 ]
 
@@ -60,7 +113,6 @@ def calculate_score(user_answer, ideal_answer):
 
     return score
 
-
 # -----------------------------
 # Feedback Function
 # -----------------------------
@@ -76,14 +128,13 @@ def generate_feedback(question, answer):
     result = generator(prompt, max_length=150)
     return result[0]["generated_text"]
 
-
 # -----------------------------
 # Streamlit UI
 # -----------------------------
-st.set_page_config(page_title="AI Interview Agent", page_icon="🤖")
+st.set_page_config(page_title="Voice AI Interview Agent", page_icon="🎙️")
 
-st.title("🤖 AI Interview Agent")
-st.write("Practice interview with AI. No API key required.")
+st.title("🎙️ Voice AI Interview Agent")
+st.write("AI question voice me bolega, candidate voice se answer dega.")
 
 name = st.text_input("Enter your name")
 
@@ -94,6 +145,15 @@ if "results" not in st.session_state:
     st.session_state.results = []
 
 if name:
+
+    # Exit Interview Button
+    if st.button("❌ Exit Interview"):
+        st.session_state.current_question = 0
+        st.session_state.results = []
+        st.session_state.voice_answer = ""
+        st.success("Interview exited successfully.")
+        st.stop()
+
     index = st.session_state.current_question
 
     if index < len(questions):
@@ -102,11 +162,30 @@ if name:
         st.subheader(f"Question {index + 1}")
         st.write(q["question"])
 
-        answer = st.text_area("Your Answer")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            if st.button("🔊 Speak Question"):
+                speak_text(q["question"])
+
+        with col2:
+            if st.button("🎤 Record Answer"):
+                audio_path = record_voice(duration=10)
+                answer = voice_to_text(audio_path)
+
+                os.remove(audio_path)
+
+                st.session_state["voice_answer"] = answer
+                st.success("Voice converted to text")
+
+        answer = st.text_area(
+            "Your Answer",
+            value=st.session_state.get("voice_answer", "")
+        )
 
         if st.button("Submit Answer"):
             if answer.strip() == "":
-                st.warning("Please enter your answer.")
+                st.warning("Please give your answer.")
             else:
                 score = calculate_score(answer, q["ideal"])
                 feedback = generate_feedback(q["question"], answer)
@@ -118,6 +197,7 @@ if name:
                     "feedback": feedback
                 })
 
+                st.session_state.voice_answer = ""
                 st.session_state.current_question += 1
                 st.rerun()
 
@@ -134,17 +214,15 @@ if name:
             st.write("---")
             st.write(f"### Question {i + 1}")
             st.write(item["question"])
-
             st.write("**Your Answer:**")
             st.write(item["answer"])
-
             st.write("**Score:**")
             st.write(f"{item['score']}%")
-
             st.write("**AI Feedback:**")
             st.write(item["feedback"])
 
         if st.button("Restart Interview"):
             st.session_state.current_question = 0
             st.session_state.results = []
+            st.session_state.voice_answer = ""
             st.rerun()
