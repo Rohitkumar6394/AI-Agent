@@ -1,0 +1,7 @@
+Manager: Project deadline is July 15.
+
+Developer: Backend module will finish next week.
+
+Manager: Client requested dashboard updates.
+
+Team Lead: Testing starts after development.
