@@ -1,0 +1,4 @@
+bed_id,ward,status
+B001,General Ward,Available
+B002,General Ward,Occupied
+B003,ICU,Available

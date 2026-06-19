@@ -1,0 +1,15 @@
+streamlit
+pandas
+numpy
+pypdf
+faiss-cpu
+torch
+transformers
+sentence-transformers
+langchain
+langchain-community
+langchain-text-splitters
+langchain-huggingface
+SpeechRecognition
+pyttsx3
+pyaudio

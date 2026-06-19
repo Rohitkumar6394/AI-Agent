@@ -1,0 +1,4 @@
+test_id,test_name,price,available_time
+T001,Blood Test,300,9 AM - 5 PM
+T002,X-Ray,500,10 AM - 4 PM
+T003,ECG,800,10 AM - 3 PM

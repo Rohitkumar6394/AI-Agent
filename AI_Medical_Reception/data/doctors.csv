@@ -1,0 +1,7 @@
+doctor_id,name,department,specialization,phone,fee,available_time
+DOC-001,Dr Sharma,General Physician,Fever cold cough general checkup,9876543210,500,10 AM - 2 PM
+DOC-002,Dr Gupta,Cardiology,Heart specialist,9876543211,1000,11 AM - 3 PM
+DOC-003,Dr Khan,Dentist,Dental care,9876543212,700,12 PM - 5 PM
+DOC-004,Dr Singh,Dermatology,Skin specialist,9876543213,800,10 AM - 1 PM
+DOC-005,Dr Verma,Orthopedic,Bone specialist,9876543214,900,2 PM - 6 PM
+DOC-006,Dr Mehta,Pediatrics,Child specialist,9876543215,600,9 AM - 12 PM
