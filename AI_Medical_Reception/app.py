@@ -229,6 +229,7 @@ menu = st.sidebar.radio(
         "💬 Text Chat",
         "🔊 Text Input Voice Answer",
         "🎤 Voice Chat",
+        "📅 Book Appointment",
         "📁 View Data"
     ]
 )
@@ -345,3 +346,78 @@ elif menu == "📁 View Data":
         elif selected_file.endswith(".pdf"):
             st.info("PDF file added in knowledge base.")
             st.write(selected_file)
+
+
+elif menu == "📅 Book Appointment":
+    st.subheader("📅 Book Appointment")
+
+    patient_name = st.text_input("Patient Name")
+
+    age = st.number_input(
+        "Age",
+        min_value=1,
+        max_value=120
+    )
+
+    phone = st.text_input("Phone Number")
+
+    department = st.text_input(
+        "Department",
+        placeholder="Example: Cardiology"
+    )
+
+    doctor_name = st.text_input(
+        "Doctor Name",
+        placeholder="Example: Dr Sharma"
+    )
+
+    appointment_date = st.date_input("Appointment Date")
+    appointment_time = st.time_input("Appointment Time")
+
+    reason = st.text_area("Reason / Symptoms")
+
+    if st.button("📅 Book Appointment"):
+        if (
+            patient_name.strip() == "" or
+            phone.strip() == "" or
+            doctor_name.strip() == ""
+        ):
+            st.warning("Please fill Patient Name, Phone Number and Doctor Name.")
+
+        else:
+            appointment_id = "A" + pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
+
+            new_appointment = pd.DataFrame({
+                "AppointmentID": [appointment_id],
+                "PatientName": [patient_name],
+                "Age": [age],
+                "Phone": [phone],
+                "Department": [department],
+                "Doctor": [doctor_name],
+                "Date": [str(appointment_date)],
+                "Time": [str(appointment_time)],
+                "Reason": [reason],
+                "Status": ["Confirmed"]
+            })
+
+            appointment_file = os.path.join(DATA_DIR, "appointments.csv")
+
+            if os.path.exists(appointment_file):
+                old_df = pd.read_csv(appointment_file)
+                final_df = pd.concat(
+                    [old_df, new_appointment],
+                    ignore_index=True
+                )
+            else:
+                final_df = new_appointment
+
+            final_df.to_csv(appointment_file, index=False)
+
+            st.success(f"✅ Appointment Booked Successfully! ID: {appointment_id}")
+
+            st.dataframe(new_appointment)
+
+            if st.button("🔊 Speak Confirmation"):
+                speak_text(
+                    f"Appointment booked successfully for {patient_name}"
+                )
